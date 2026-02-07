@@ -1,0 +1,137 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Klotski Level Master</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --board-bg: #dcc8a0;
+            --tile-bg: #fffcf2;
+            --tile-text: #4a3728;
+            --accent: #8b5e3c;
+        }
+
+        body {
+            background-color: #f0ebe3;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        .game-container {
+            perspective: 1000px;
+        }
+
+        .puzzle-board {
+            position: relative;
+            background-color: var(--board-bg);
+            border: 10px solid #6d4c41;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3), inset 0 0 20px rgba(0,0,0,0.2);
+            margin: 20px auto;
+            transition: all 0.5s ease;
+        }
+
+        .tile {
+            position: absolute;
+            background-color: var(--tile-bg);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: var(--tile-text);
+            cursor: pointer;
+            box-shadow: 0 6px 0px #bcaaa4;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.1s;
+            z-index: 10;
+        }
+
+        .tile:active {
+            box-shadow: 0 2px 0px #bcaaa4;
+            transform: scale(0.96);
+        }
+
+        /* Dynamic font sizes based on grid */
+        .size-3 .tile-text { font-size: 2.5rem; }
+        .size-4 .tile-text { font-size: 1.8rem; }
+        .size-5 .tile-text { font-size: 1.4rem; }
+
+        /* Win Modal Overlay */
+        #win-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 100;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .win-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 2rem;
+            text-align: center;
+            transform: scale(0.8);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes popIn {
+            to { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+
+    <!-- Header UI -->
+    <div class="text-center mb-6">
+        <h1 class="text-4xl font-black text-[#4a3728] uppercase tracking-tighter">Level Challenge</h1>
+        <div id="level-indicator" class="mt-2 inline-block bg-[#8b5e3c] text-white px-4 py-1 rounded-full text-sm font-bold shadow-sm">
+            LEVEL 1 (3x3)
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="flex gap-8 mb-4 font-mono text-xl font-bold text-[#6d4c41]">
+        <div>MOVES: <span id="move-count" class="text-orange-700">0</span></div>
+        <div>TIME: <span id="timer" class="text-orange-700">00:00</span></div>
+    </div>
+
+    <!-- Game Area -->
+    <div class="game-container">
+        <div id="board" class="puzzle-board size-3" style="width: 340px; height: 340px;">
+            <!-- JS Tiles -->
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="mt-10 flex gap-4">
+        <button onclick="shuffleGame()" class="bg-[#8b5e3c] hover:bg-[#6d4c41] text-white px-8 py-3 rounded-xl font-bold shadow-lg transition active:scale-95">
+            Reset Level
+        </button>
+    </div>
+
+    <!-- Level Complete Screen -->
+    <div id="win-overlay">
+        <div class="win-card shadow-2xl">
+            <div class="text-yellow-500 text-6xl mb-4">🏆</div>
+            <h2 id="win-level-text" class="text-5xl font-black text-gray-800 mb-2">LEVEL 1</h2>
+            <p class="text-2xl font-bold text-green-600 mb-6 uppercase tracking-widest">COMPLETED!</p>
+            
+            <div class="bg-gray-100 p-4 rounded-xl mb-8">
+                <p id="final-stats" class="text-gray-600 font-medium"></p>
+            </div>
+
+            <button id="next-btn" onclick="goToNextLevel()" class="w-full bg-orange-600 hover:bg-orange-700 text-white py-4 rounded-2xl font-black text-xl shadow-xl transition-all hover:-translate-y-1">
+                NEXT LEVEL
